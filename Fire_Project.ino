@@ -2,8 +2,6 @@
 #include "Enes100.h"
 #include "Tank.h"
 
-
-
 void setup() {
     Enes100.println("hi");
     Enes100.begin("Simulator", FIRE, 3, 8, 9);
