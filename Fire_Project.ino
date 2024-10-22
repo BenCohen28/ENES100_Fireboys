@@ -22,7 +22,7 @@ void loop() {
     v = Enes100.isVisible(); // Is your aruco visible? True or False.
 
     //Enes100.println("hello world");
-
+    //Zone5
     if (x >= 3.5){
       Serial.print("Zone 5 ");
       if (y >= 1.3){
@@ -32,7 +32,9 @@ void loop() {
       } else if (y >= 0){
         Serial.println("Zone C");
       }
-    } else if (x >= 2.6){
+    }
+    //Zone4
+    else if (x >= 2.6){
       Serial.print("Zone 4 ");
       if (y >= 1.3){
         Serial.println("Zone A");
@@ -41,7 +43,9 @@ void loop() {
       } else if (y >= 0){
         Serial.println("Zone C");
       }
-    } else if (x >= 1.4){
+    } 
+    //Zone3    
+    else if (x >= 1.4){
       Serial.print("Zone 3 ");
       if (y >= 1.3){
         Serial.println("Zone A");
@@ -50,7 +54,9 @@ void loop() {
       } else if (y >= 0){
         Serial.println("Zone C");
       }
-    } else if (x >= 0.8){
+    } 
+    //Zone2
+    else if (x >= 0.8){
       Serial.print("Zone 2 ");
       if (y >= 1.3){
         Serial.println("Zone A");
@@ -59,7 +65,9 @@ void loop() {
       } else if (y >= 0){
         Serial.println("Zone C");
       }
-    } else if (x >= 0){
+    } 
+    //Zone1
+    else if (x >= 0){
       Serial.print("Zone 1 ");
       if (y >= 1.3){
         Serial.println("Zone A");
