@@ -2,15 +2,11 @@
 #include "Enes100.h"
 #include "Tank.h"
 
+
 void setup() {
-    Enes100.println("hi");
     Enes100.begin("Simulator", FIRE, 3, 8, 9);
     Tank.begin();
-    
     Enes100.println("Starting driving");
-    Tank.setLeftMotorPWM(80);
-    Tank.setRightMotorPWM(80);
-    
 }
 
 void loop() {
@@ -65,17 +61,41 @@ void loop() {
       }
     } 
     //Zone1
+    //Zone1A Turning Mechanism
     else if (x >= 0){
        Enes100.println("Zone 1 ");
       if (y >= 1.3){
+          while(t < -1.45 || t > -1.925){
+             Tank.setLeftMotorPWM(25);
+             Tank.setRightMotorPWM(-25);
+             t = Enes100.getTheta();
+          }
+          while (t >= -1.45 && t <= -1.925){
+             Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(50);
         Enes100.println("Zone A");
-      } else if (y >= 0.7){
-        Enes100.println("Zone B");
-      } else if (y >= 0){
+      } 
+     }
+      else if (y >= 0.7){
+           Enes100.println("Zone B");
+          }
+          
+      } 
+      //Zone1C Turning Mechnaism
+      else if (y >= 0){
+          Tank.turnOffMotors();
+          while(t < 1.45 || t > 1.925){
+             Tank.setLeftMotorPWM(25);
+             Tank.setRightMotorPWM(-25);
+             t = Enes100.getTheta();
+          }
+          while (t >= 1.45 && t <= 1.925){
+             Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(50);
+          }
+          
         Enes100.println("Zone C");
       }
-    }
-
     
     if (v) // If the ArUco marker is visible
     {
@@ -89,3 +109,4 @@ void loop() {
         Enes100.println("Not visible"); // print not visible
     }
 }
+    
