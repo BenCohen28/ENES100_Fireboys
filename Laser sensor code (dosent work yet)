@@ -1,0 +1,46 @@
+#include <SparkFun_VL53L1X.h>
+
+#include <Wire.h>
+#include "SparkFun_VL53L1X.h"
+
+
+SFEVL53L1X distanceSensor;
+//Uncomment the following line to use the optional shutdown and interrupt pins.
+//SFEVL53L1X distanceSensor(Wire, SHUTDOWN_PIN, INTERRUPT_PIN);
+
+void setup(void)
+{
+  Wire.begin();
+
+  Serial.begin(9600);
+  Serial.println("VL53L1X Qwiic Test");
+
+  if (distanceSensor.begin() == 0) //Begin returns 0 on a good init
+  {
+    Serial.println("Sensor online Robojax Says!");
+  }
+  Serial.print("I2C Address of VL53L1X:");
+  Serial.println(distanceSensor.getI2CAddress()); 
+
+// set distance mode to Short or long
+  //distanceSensor.setDistanceModeShort();
+  distanceSensor.setDistanceModeLong();
+
+}
+
+void loop(void){ 
+  distanceSensor.startRanging();
+  int distance = distanceSensor.getDistance();
+  distanceSensor.stopRanging();
+
+  Serial.print("Distance(mm): ");
+  Serial.print(distance);
+
+  float distanceInches = distance * 0.0393701;
+  float distanceFeet = distanceInches / 12.0
+
+  Serial.print("\tDistance(ft): ");
+  Serial.print(distanceFeet, 2);
+
+  Serial.println();
+}
