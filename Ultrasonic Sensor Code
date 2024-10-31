@@ -1,0 +1,10 @@
+#include "Tank.h"
+void setup() {
+Tank.begin();
+Enes100.begin("Alec B Lahr", MATERIAL, arucoID, 52, 50);
+}
+void loop() {
+// Will print to vision system!
+Enes100.print("Ultrasonic Reading: ");
+Enes100.println(Tank.readDistanceSensor(1));
+}
