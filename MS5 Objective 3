@@ -1,10 +1,13 @@
 #include "Tank.h"
 #include "Enes100.h"
-#include "Arduino.h"
+
 void setup() {
-    Enes100.begin("Simulator", FIRE, 3, 8, 9);
+    // Initialize Enes100 Library
+    // Team Name, Mission Type, Marker ID, Wifi Module TX Pin, Wifi Module RX Pin
+    Enes100.begin("Fire", FIRE, 284, 52, 50);
+    // At this point we know we are connected.
+    Enes100.println("Connected...");
     Tank.begin();
-    Enes100.println("Starting driving");
 }
 void loop() {
     float x, y, t; bool v;
@@ -12,28 +15,30 @@ void loop() {
     y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
     t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
     v = Enes100.isVisible(); // Is your aruco visible? True or False.
-    
+    Enes100.println(Enes100.getY());
+    Enes100.println(Enes100.getX());
      while (t <=0 &&t >=-1.53){
-             Tank.setLeftMotorPWM(25);
-             Tank.setRightMotorPWM(-25);
+             Tank.setLeftMotorPWM(100);
+             Tank.setRightMotorPWM(-100);
             t = Enes100.getTheta();
              }
-              Tank.turnOffMotors();
+             Tank.turnOffMotors();
               
               delay(1000);
               
     while (t <=-1.53 && t >= -3.14){
-             Tank.setLeftMotorPWM(25);
-             Tank.setRightMotorPWM(-25);
+            Tank.setLeftMotorPWM(100);
+            Tank.setRightMotorPWM(-100);
             t = Enes100.getTheta();
              }
+
               Tank.turnOffMotors();
               
              delay(1000);
 
     while (t <=3.14 && t >= 1.53){
-             Tank.setLeftMotorPWM(25);
-             Tank.setRightMotorPWM(-25);
+             Tank.setLeftMotorPWM(100);
+             Tank.setRightMotorPWM(-100);
             t = Enes100.getTheta();
              }
               Tank.turnOffMotors();
