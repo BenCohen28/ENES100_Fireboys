@@ -1,0 +1,169 @@
+#include "Arduino.h"
+#include "Enes100.h"
+#include "Tank.h"
+
+
+void setup() {
+    Enes100.begin("Simulator", FIRE, 3, 8, 9);
+    Tank.begin();
+    Enes100.println("Starting driving");
+}
+
+void loop() {
+    float x, y, t; bool v;
+    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
+    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
+    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
+    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+    
+    Enes100.print("Ultrasonic Reading: ");
+    Enes100.println(Tank.readDistanceSensor(1));
+     //Zone5
+    if (x >= 3.3){
+      Enes100.println("Zone 5 ");
+      Tank.turnOffMotors();
+      if (y >= 1.3){
+       Enes100.println("Zone A");
+      } else if (y >= 0.7){
+       Enes100.println("Zone B");
+      } else if (y >= 0){
+       Enes100.println("Zone C");
+      }
+    }
+    //Zone4
+    else if (x >= 2.6){
+      Enes100.println("Zone 4 ");
+      if (y >= 1.3){
+        Enes100.println("Zone A");
+      } else if (y >= 0.7){
+        Enes100.println("Zone B");
+      } else if (y >= 0){
+        Enes100.println("Zone C");
+      }
+    } 
+    //Zone3    
+    else if (x >= 1.4){
+      Enes100.println("Zone 3 ");
+      if (y >= 1.3){
+        Enes100.println("Zone A");
+      } else if (y >= 0.7){
+        Enes100.println("Zone B");
+      } else if (y >= 0){
+        Enes100.println("Zone C");
+      }
+    } 
+    //Zone2
+    else if (x >= 0.8){
+      Enes100.println("Zone 2 ");
+      if (y >= 1.3){
+        Enes100.println("Zone A");
+      } else if (y >= 0.7){
+        Enes100.println("Zone B");
+      } else if (y >= 0){
+        Enes100.println("Zone C");
+      }
+    } 
+    //Zone1
+    //Zone1A Turning Mechanism
+    else if (x >= 0){
+       Enes100.println("Zone 1 ");
+      if (y >= 1.3){
+          Enes100.println("Zone A ");
+          while(t > -1.55 || t < -1.655){
+             Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(-50);
+             t = Enes100.getTheta();
+          }
+          while (t <= -1.55 && t >= -1.655 && y > 0.4){
+            Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(50);
+             y = Enes100.getY();
+        }
+        Tank.turnOffMotors();
+             while (t > -1.655 && t < 0){
+                Tank.setLeftMotorPWM(-50);
+                Tank.setRightMotorPWM(50);
+                t = Enes100.getTheta();
+             }
+            Tank.turnOffMotors();
+            while (t < 0.5 && t > -0.5 && x < 2.9){
+            Tank.setLeftMotorPWM(50);
+            Tank.setRightMotorPWM(50);
+            x = Enes100.getX();
+          }
+            Tank.turnOffMotors();
+            exit(0);
+     }
+     
+      else if (y >= 0.7){
+           Enes100.println("Zone B");   
+          }
+      //Zone1C Turning Mechnaism
+      else if (y >= 0){
+         Enes100.println("Zone C");
+          while(t < 1.55 || t > 1.655){
+             Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(-50);
+             t = Enes100.getTheta();
+          }
+          while (t >= 1.55 && t <= 1.655 && y < 1.51){
+            Tank.setLeftMotorPWM(50);
+             Tank.setRightMotorPWM(50);
+             y = Enes100.getY();
+             Enes100.print("Ultrasonic Reading: ");
+             Enes100.println(Tank.readDistanceSensor(1));
+           
+       
+              }
+             Tank.turnOffMotors();
+            while (t < 1.655 && t > 0){
+                Tank.setLeftMotorPWM(50);
+                Tank.setRightMotorPWM(-50);
+                t = Enes100.getTheta();
+             }
+            Tank.turnOffMotors();
+            while (t < 0.5 && t > -0.5 && x < 2.9){
+            Tank.setLeftMotorPWM(50);
+            Tank.setRightMotorPWM(50);
+            x = Enes100.getX();
+            Enes100.print("Ultrasonic Reading: ");
+            Enes100.println(Tank.readDistanceSensor(1));
+            while (abs(Tank.readDistanceSensor(1)) < 0.25 ){
+                while(t<0.1 && t>-1.55){
+                 Tank.setRightMotorPWM(-50);
+                 Tank.setLeftMotorPWM(50);
+                 t = Enes100.getTheta();
+                }
+                Tank.turnOffMotors();
+                while (y > 1){
+                    Tank.setLeftMotorPWM(50);
+                    Tank.setRightMotorPWM(50);
+                    y = Enes100.getY();
+                }
+                while (t > -1.6 && t < 0){
+                    Tank.setLeftMotorPWM(-50);
+                    Tank.setRightMotorPWM(50);
+                    t = Enes100.getTheta();
+                }
+             }
+          }
+            Tank.turnOffMotors();
+            exit(0);
+          
+      }
+      
+    }
+    
+    if (v) // If the ArUco marker is visible
+    {
+        Enes100.print(x); // print out the location
+        Enes100.print(",");
+        Enes100.print(y);
+        Enes100.print(",");
+        Enes100.println(t);
+    }
+    else { // otherwise
+        Enes100.println("Not visible"); // print not visible
+    }
+}
+    
