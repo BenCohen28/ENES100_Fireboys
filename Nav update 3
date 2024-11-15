@@ -224,6 +224,9 @@ void loop() {
             while (y > 0.6){
                 Tank.setLeftMotorPWM(100);
                 Tank.setRightMotorPWM(100);
+                delay(300);
+                Tank.turnOffMotors();
+                delay(100);
                 y = Enes100.getY();
             }
         }
