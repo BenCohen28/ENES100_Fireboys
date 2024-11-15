@@ -1,0 +1,195 @@
+#include "Arduino.h"
+#include "Enes100.h"
+#include "Tank.h"
+
+
+void setup() {
+    Enes100.begin("Fire", FIRE, 284, 52, 50);
+    Tank.begin();
+    Enes100.println("Starting driving");
+}
+void loop() {
+    float x, y, t; bool v;
+    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
+    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
+    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
+    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+    
+    Enes100.print("Ultrasonic Reading: ");
+    Enes100.println(Tank.readDistanceSensor(1));
+    //The if statement checks if otv is in zone 1
+   if (x >= 0 && x <= 0.8){
+       Enes100.println("Zone 1 ");
+       //Checks if otv is in zone a
+      if (y >= 1.3){
+          Enes100.println("Zone A ");
+          while(t > -1.35 || t < -1.75){
+             Tank.setLeftMotorPWM(80);
+             Tank.setRightMotorPWM(-80);
+             t = Enes100.getTheta();
+             delay(100);
+             Tank.turnOffMotors();
+          }
+          while (y > 0.65){
+            y = Enes100.getY();
+            Tank.setLeftMotorPWM(100);
+             Tank.setRightMotorPWM(100);
+             t=Enes100.getTheta();
+             delay(100);
+             Tank.turnOffMotors();
+             if(t < -1.68){
+                 Tank.setRightMotorPWM(80);
+             }
+        }
+        Tank.turnOffMotors();
+            while (t > 0.5 || t < -0.5){
+                Tank.setLeftMotorPWM(-100);
+                Tank.setRightMotorPWM(100);
+                t = Enes100.getTheta();
+                delay(200);
+                Tank.turnOffMotors();
+            }
+            Tank.turnOffMotors();
+            while (x < 0.8){
+                Tank.setLeftMotorPWM(100);
+                Tank.setRightMotorPWM(100);
+                x = Enes100.getX();
+                t=Enes100.getTheta();
+                Tank.turnOffMotors();
+                delay(100);
+                if(t > 0.2){
+                    Tank.setRightMotorPWM(80);
+                }
+                if(t < -0.2){
+                    Tank.setLeftMotorPWM(80);
+                }
+            }
+      }
+      //Checks if otv is in zone C
+        else {
+         Enes100.println("Zone C");
+        while(t < 1.35 || t > 1.75){
+             Tank.setLeftMotorPWM(80);
+             Tank.setRightMotorPWM(-80);
+             t = Enes100.getTheta();
+             delay(100);
+             Tank.turnOffMotors();
+        }
+        while (y < 1.3){
+            y=Enes100.getY();
+            Tank.setLeftMotorPWM(100);
+            Tank.setRightMotorPWM(100);
+            t=Enes100.getTheta();
+            delay(200);
+            Tank.turnOffMotors();
+            if(t > 1.78){
+                 Tank.setRightMotorPWM(80);
+            }
+            if(t < 1.4){
+                Tank.setRightMotorPWM(80);
+            }
+            
+        }
+        Tank.turnOffMotors();
+        while(t < -0.3 || t > 0.1){
+            Tank.setLeftMotorPWM(100);
+            Tank.setRightMotorPWM(-100);
+            t = Enes100.getTheta();
+            delay(200);
+            Tank.turnOffMotors();
+        }
+        while(x < 0.8){
+            Tank.setLeftMotorPWM(100);
+            Tank.setRightMotorPWM(100);
+            x = Enes100.getX();
+            t=Enes100.getTheta();
+                Tank.turnOffMotors();
+                delay(100);
+                if(t > 0.2){
+                    Tank.setRightMotorPWM(70);
+                }
+                if(t < -0.2){
+                    Tank.setLeftMotorPWM(70);
+                }
+         }
+      }
+    }
+        if (x >= 0.8 && x <= 2.6 ){
+        Enes100.println("Zone 2 ");
+        if (y >= 1.3 || y < 0.8){
+            while (t < 0.5 && t > -0.5 && x < 2.655){
+                Tank.setLeftMotorPWM(100);
+                Tank.setRightMotorPWM(100);
+                x = Enes100.getX();
+                Enes100.print("Ultrasonic Reading: ");
+                Enes100.println(Tank.readDistanceSensor(1));
+            while (abs(Tank.readDistanceSensor(1)) < 0.25){
+                if (y > 1.3){
+                    while( t < 0.1 && t > -1.55){
+                    Tank.setRightMotorPWM(-100);
+                    Tank.setLeftMotorPWM(100);
+                    t = Enes100.getTheta();
+                }   
+                    Tank.turnOffMotors();
+                    while (y > 1){
+                    Tank.setLeftMotorPWM(150);
+                    Tank.setRightMotorPWM(150);
+                    y = Enes100.getY();
+                }
+                    while (t > -1.6 && t < 0){
+                    Tank.setLeftMotorPWM(-100);
+                    Tank.setRightMotorPWM(100);
+                    t = Enes100.getTheta();
+                    }
+                }
+                    if (y < 0.8){
+                        while( t > -0.1 && t < 1.55){
+                            Tank.setRightMotorPWM(100);
+                            Tank.setLeftMotorPWM(-100);
+                            t = Enes100.getTheta();
+                        }
+                        Tank.turnOffMotors();
+                         while (y < 1){
+                             Tank.setLeftMotorPWM(150);
+                             Tank.setRightMotorPWM(150);
+                             y = Enes100.getY();
+                            }
+                         while (t < 1.7 && t > 0){
+                             Tank.setLeftMotorPWM(100);
+                             Tank.setRightMotorPWM(-100);
+                             t = Enes100.getTheta();
+                         }
+                         
+                    }
+               }
+            }
+        }
+    }
+        Tank.turnOffMotors();
+
+        if (y > 0.7){
+            while (t > -1.45 || t < -2){
+                Tank.setLeftMotorPWM(100);
+                Tank.setRightMotorPWM(-100);
+                t = Enes100.getTheta();
+        }
+        Tank.turnOffMotors();
+            while (y > 0.6){
+                Tank.setLeftMotorPWM(150);
+                Tank.setRightMotorPWM(150);
+                y = Enes100.getY();
+            }
+        }
+            Tank.turnOffMotors();
+            while (t > 0.5 || t < -0.1){
+                Tank.setLeftMotorPWM(-100);
+                Tank.setRightMotorPWM(100);
+                t = Enes100.getTheta();
+            }
+            while (x < 3.6){
+                Tank.setLeftMotorPWM(150);
+                Tank.setRightMotorPWM(150);
+                x = Enes100.getX();
+            }
+            Tank.turnOffMotors();
+}
