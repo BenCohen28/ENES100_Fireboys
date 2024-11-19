@@ -1,4 +1,4 @@
-// https://github.com/pololu/vl53l1x-arduino/blob/master/library.properties
+//https://github.com/pololu/vl53l1x-arduino/blob/master/library.properties
 /*
 This example shows how to set up and read multiple VL53L1X sensors connected to
 the same I2C bus. Each sensor needs to have its XSHUT pin connected to a
@@ -65,7 +65,11 @@ void loop()
 {
   for (uint8_t i = 0; i < sensorCount; i++)
   {
-    Serial.print(sensors[i].read());
+    if (sensors[i].read() < 100){
+      Serial.print("Obsticle");
+    }else {
+      Serial.print(sensors[i].read());
+    }
     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
     Serial.print('\t');
   }
