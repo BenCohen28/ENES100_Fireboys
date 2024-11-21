@@ -52,25 +52,16 @@ void loop() {
     Enes100.println("Zone A ");
     while(t > -1.55 || t < -1.655){
       if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){
-        turnRight(70);
-        delay(200);
-        stopMoving();
-        delay(1000);
+        turnRight(70, 200, 1000);
         t = Enes100.getTheta();
       } 
       if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){
-        turnLeft(70);
-        delay(200);
-        stopMoving();
-        delay(1000);
+        turnLeft(70, 200, 1000);
         t = Enes100.getTheta();
       }
     }
     while (t <= -1.55 && t >= -1.655 && y > 0.8){
-      moveForward(40);
-      delay(500);
-      stopMoving();
-      delay(1000);
+      moveForward(40, 500, 1000);
       y = Enes100.getY();
     }
     //Tank.turnOffMotors();
@@ -94,26 +85,16 @@ void loop() {
       Enes100.println("Zone C");
       while(t < 1.55 || t > 1.655){
         if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){
-          turnLeft(70);
-          delay(200);
-        stopMoving();
-        delay(1000);
+          turnLeft(70, 200, 1000);
           t = Enes100.getTheta();
         } 
         if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){
-          turnRight(70);
-          delay(200);
-        stopMoving();
-        delay(1000);
+          turnRight(70, 200, 1000);
           t = Enes100.getTheta();
         }
       }
       while (t >= 1.55 && t <= 1.655 && y < 1.2){
-        moveForward(40);
-      delay(500);
-      stopMoving();
-      delay(1000);
-      y = Enes100.getY();
+        moveForward(40, 500, 1000);
         y = Enes100.getY();
       }
       //Tank.turnOffMotors();
@@ -136,7 +117,7 @@ void loop() {
   }
 }
 
-void turnRight(float speed){
+void turnRight(float speed, int wait, int wait1){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -149,9 +130,12 @@ void turnRight(float speed){
   digitalWrite(MOTOR4_P1, LOW);
   digitalWrite(MOTOR4_P2, HIGH);
   Enes100.println("Turning right");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
 }
 
-void turnLeft(float speed){
+void turnLeft(float speed, int wait, int wait1){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -164,9 +148,12 @@ void turnLeft(float speed){
   digitalWrite(MOTOR4_P1, HIGH);
   digitalWrite(MOTOR4_P2, LOW);
   Enes100.println("Turning left");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
 }
 
-void moveForward(float speed){
+void moveForward(float speed, int wait, int wait1){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -179,6 +166,9 @@ void moveForward(float speed){
   digitalWrite(MOTOR4_P1, HIGH);
   digitalWrite(MOTOR4_P2, LOW);
   Enes100.println("moving Forward");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
 }
 
 void stopMoving(){
