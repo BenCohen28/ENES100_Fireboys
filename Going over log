@@ -3,14 +3,14 @@
 //#include "Tank.h"
 
 //Motor to pin connection
-#define MOTOR1_P1 3
-#define MOTOR1_P2 2
-#define MOTOR2_P1 5
-#define MOTOR2_P2 4
-#define MOTOR3_P1 13
-#define MOTOR3_P2 12
-#define MOTOR4_P1 7
-#define MOTOR4_P2 6
+#define MOTOR1_P1 46
+#define MOTOR1_P2 48
+#define MOTOR2_P1 50
+#define MOTOR2_P2 52
+#define MOTOR3_P1 44
+#define MOTOR3_P2 42
+#define MOTOR4_P1 40
+#define MOTOR4_P2 38
 #define MOTOR_PWM1 10
 #define MOTOR_PWM2 11
 
@@ -39,9 +39,9 @@ void setup() {
 void loop() {
   float x, y, t; bool v;
   x = Enes100.getX();   // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
-  y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
-  t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
-  v = Enes100.isVisible(); // Is your aruco visible? True or False.
+  y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible
+  t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible
+  v = Enes100.isVisible(); // Is your aruco visible? True or False
    
   //If the OTV spawns in ZOne A it will run the code below
   //It will exit out of the code once it reaches the next section
@@ -49,11 +49,11 @@ void loop() {
     if (y >= 1.3){
       Enes100.println("Zone A ");
         while(t > -1.55 || t < -1.655){   //Turn code for Zone A spawn
-          if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){  //Adjustment code 
+          if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){  //Adjustment code 
             turnRight(70, 300, 1000);
             t = Enes100.getTheta();
       } 
-      if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){  //Adjustment code 
+      if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){    //Adjustment code 
         turnLeft(70, 300, 1000);
         t = Enes100.getTheta();
       }
@@ -78,11 +78,11 @@ void loop() {
     else if (y <= 0.7){
       Enes100.println("Zone C");
       while(t < 1.55 || t > 1.655){   //Turn code for Zone C spawn
-        if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){    //Adjustment code 
+        if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
           turnLeft(70, 300, 1000);
           t = Enes100.getTheta();
         } 
-        if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){  //Adjustment code 
+        if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){  //Adjustment code 
           turnRight(70, 300, 1000);
           t = Enes100.getTheta();
         }
@@ -104,11 +104,11 @@ void loop() {
   }
   if(y > 0.8){
     while(t > -1.55 || t < -1.655){   //Turn code for Zone A
-        if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){    //Adjustment code 
+        if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
           turnRight(70, 300, 500);
           t = Enes100.getTheta();
         } 
-        if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){    //Adjustment code 
+        if (t > (PI/2) && t < (PI) || t>-(PI) && t<-(PI/2)){    //Adjustment code 
           turnLeft(70, 300, 500);
           t = Enes100.getTheta();
         }
