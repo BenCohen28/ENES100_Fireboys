@@ -52,16 +52,25 @@ void loop() {
     Enes100.println("Zone A ");
     while(t > -1.55 || t < -1.655){
       if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){
-        turnRight(70, 200, 1000);
+        turnRight(70);
+        delay(300);
+        stopMoving();
+        delay(1000);
         t = Enes100.getTheta();
       } 
       if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){
-        turnLeft(70, 200, 1000);
+        turnLeft(70);
+        delay(300);
+        stopMoving();
+        delay(1000);
         t = Enes100.getTheta();
       }
     }
-    while (t <= -1.55 && t >= -1.655 && y > 0.8){
-      moveForward(40, 500, 1000);
+    while (t <= -1.55 && t >= -1.655 && y > 0.6){
+      moveForward(40);
+      delay(500);
+      stopMoving();
+      delay(1000);
       y = Enes100.getY();
     }
     //Tank.turnOffMotors();
@@ -69,15 +78,24 @@ void loop() {
     while (t > -1.655 && t < 0){ //Code for turning from zone C to obstacles.
       //Tank.setLeftMotorPWM(-50);
       //Tank.setRightMotorPWM(50);
-      t = Enes100.getTheta();
+      turnLeft(70);
+        delay(300);
+        stopMoving();
+        delay(1000);
+        t = Enes100.getTheta();
       }
     //Tank.turnOffMotors();
-    while (t < 0.5 && t > -0.5 && x < 0.8){
+    while (t < 0.5 && t > -0.5 && x < 2.7){
       //Tank.setLeftMotorPWM(50);
       //Tank.setRightMotorPWM(50);
+      moveForward(40);
+      delay(800);
+      stopMoving();
+      delay(1000);
       x = Enes100.getX();
     }
     //Tank.turnOffMotors();
+    stopMoving();
     }
     //If the OTV spawns in Zone C it will run the code below
     //It will exit out of the code once it reaches the next part of the course
@@ -85,39 +103,92 @@ void loop() {
       Enes100.println("Zone C");
       while(t < 1.55 || t > 1.655){
         if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){
-          turnLeft(70, 200, 1000);
+          turnLeft(70);
+          delay(300);
+        stopMoving();
+        delay(1000);
           t = Enes100.getTheta();
         } 
         if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){
-          turnRight(70, 200, 1000);
+          turnRight(70);
+          delay(300);
+        stopMoving();
+        delay(1000);
           t = Enes100.getTheta();
         }
       }
-      while (t >= 1.55 && t <= 1.655 && y < 1.2){
-        moveForward(40, 500, 1000);
-        y = Enes100.getY();
+      while (t >= 1.55 && t <= 1.655 && y < 1.3){
+        moveForward(40);
+      delay(400);
+      stopMoving();
+      delay(1000);
+      y = Enes100.getY();
       }
       //Tank.turnOffMotors();
       stopMoving();
-      while (t < 1.655 && t > 0){
+      while (t > 0.3 || t < -0.3){
         //Tank.setLeftMotorPWM(50);
         //Tank.setRightMotorPWM(-50);
-        
+        turnRight(70);
+        delay(300);
+        stopMoving();
+        delay(1000);
         t = Enes100.getTheta();
       }
       //Tank.turnOffMotors();
-      while(t < 0.5 && t > -0.5 && x < 0.8){
+      while(t < 0.5 && t > -0.5 && x < 2.7){
         //Tank.setLeftMotorPWM(50);
         //Tank.setRightMotorPWM(50);
+        moveForward(40);
+      delay(500);
+      stopMoving();
+      delay(1000);
         x=Enes100.getX();
       }
     //Tank.turnOffMotors();
-    stopMoving();
     }
   }
+  if(y > 0.8){
+    while(t > -1.55 || t < -1.655){
+        if (t<=(PI/2) && t>0 || t<=0 && t>=-(PI/2)){
+          turnRight(70);
+          delay(300);
+        stopMoving();
+        delay(500);
+          t = Enes100.getTheta();
+        } 
+        if (t>(PI/2) && t<(PI) || t>-(PI) && t<-(PI/2)){
+          turnLeft(70);
+          delay(300);
+        stopMoving();
+        delay(500);
+          t = Enes100.getTheta();
+        }
+    }
+    while(t < -1.55 && t > -1.655 && y > 0.8){
+        moveForward(40);
+        delay(300);
+        stopMoving();
+        delay(1000);
+         y= Enes100.getY();
+      }
+  }
+  while(x>2.5 && x <3.4 && y < 1){
+     while( t > 0.2 || t < -0.2){
+      turnLeft(70);
+      delay(300);
+        stopMoving();
+        delay(1000);
+        t=Enes100.getTheta();
+     }
+      log(60, 100);
+      Enes100.print(Enes100.getTheta());
+      x=Enes100.getX();
+  }
+  exit(0);
 }
 
-void turnRight(float speed, int wait, int wait1){
+void turnRight(float speed){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -130,12 +201,9 @@ void turnRight(float speed, int wait, int wait1){
   digitalWrite(MOTOR4_P1, LOW);
   digitalWrite(MOTOR4_P2, HIGH);
   Enes100.println("Turning right");
-  delay(wait);
-  stopMoving();
-  delay(wait1);
 }
 
-void turnLeft(float speed, int wait, int wait1){
+void turnLeft(float speed){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -148,12 +216,9 @@ void turnLeft(float speed, int wait, int wait1){
   digitalWrite(MOTOR4_P1, HIGH);
   digitalWrite(MOTOR4_P2, LOW);
   Enes100.println("Turning left");
-  delay(wait);
-  stopMoving();
-  delay(wait1);
 }
 
-void moveForward(float speed, int wait, int wait1){
+void moveForward(float speed){
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
   analogWrite(MOTOR_PWM2, speed);
@@ -166,9 +231,22 @@ void moveForward(float speed, int wait, int wait1){
   digitalWrite(MOTOR4_P1, HIGH);
   digitalWrite(MOTOR4_P2, LOW);
   Enes100.println("moving Forward");
-  delay(wait);
-  stopMoving();
-  delay(wait1);
+}
+
+void log(float speed, float speed1){
+  speed = (speed/100)*255;
+  speed1 = (speed1/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed1);
+  digitalWrite(MOTOR1_P1, HIGH);
+  digitalWrite(MOTOR1_P2, LOW);
+  digitalWrite(MOTOR2_P1, HIGH);
+  digitalWrite(MOTOR2_P2, LOW);
+  digitalWrite(MOTOR3_P1, HIGH);
+  digitalWrite(MOTOR3_P2, LOW);
+  digitalWrite(MOTOR4_P1, HIGH);
+  digitalWrite(MOTOR4_P2, LOW);
+  Enes100.println("moving Forward");
 }
 
 void stopMoving(){
