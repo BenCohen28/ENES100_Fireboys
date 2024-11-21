@@ -18,7 +18,7 @@ void setup() {
   Serial.begin(9600);
   delay(2000);
   Serial.print("Wifi Connection started");
-  Enes100.begin("Fireboys", FIRE, 284, 9, 8);   //Connect Aruco Marker to Vision System
+  Enes100.begin("Fireboys", FIRE, 284, 22, 26);   //Connect Aruco Marker to Vision System
   Serial.print("Wifi connected");
   delay(2000);
   Enes100.println("Fireboys Starting Drive");
