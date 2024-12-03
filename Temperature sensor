@@ -1,20 +1,103 @@
-#include <dht.h>
+// Example testing sketch for various DHT humidity/temperature sensors
+// Written by ladyada, public domain   https://github.com/adafruit/DHT-sensor-library
+#include "DHT.h"
+#define DHTPIN0 7     // what pin we're connected to
+#define DHTPIN1 8     // what pin we're connected to
+// #define DHTPIN2 5     // what pin we're connected to
+// #define DHTPIN3 2     // what pin we're connected to
+// #define DHTPIN4 5     // what pin we're connected to
 
-dht DHT;
+bool test= true;
 
-#define DHT11_PIN 7
+float starting_hum0;
+float starting_temp0;
+float starting_hum1;
+float starting_temp1;
 
-void setup(){
-  Serial.begin(9600);
+// Uncomment whatever type you're using!
+
+
+#define DHTTYPE DHT11   // DHT 11 
+//#define DHTTYPE DHT22   // DHT 22  (AM2302)
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+
+// How to connect sensors
+// Connect pin 1 (on the left) of the sensor to +5V
+// Connect pin 2 of the sensor to whatever your DHTPIN is
+// Connect pin 4 (on the right) of the sensor to GROUND
+// Connect a 10K resistor from pin 2 (data) to pin 1 (power) of the sensor
+
+DHT dht0(DHTPIN0, DHTTYPE);
+DHT dht1(DHTPIN1, DHTTYPE);
+// DHT dht2(DHTPIN2, DHTTYPE);
+// DHT dht3(DHTPIN3, DHTTYPE);
+// DHT dht4(DHTPIN4, DHTTYPE);
+void setup() {
+  Serial.begin(9600); 
+  Serial.println("DHTxx test!");
+  dht0.begin();
+  dht1.begin();
+  starting_hum0 = dht0.readHumidity();
+  starting_temp0 = dht0.readHumidity();
+  starting_hum1 = dht1.readHumidity();
+  starting_temp1 = dht1.readHumidity();
+  //dht2.begin();
+  // dht3.begin();
+  // dht4.begin();
+  fire1();
+  fire2();
 }
 
-void loop(){
-  int chk = DHT.read11(DHT11_PIN);
-  Serial.print("Temperature = ");
-  Serial.print(DHT.temperature);
-  Serial.print(" ");
-  Serial.print("Humidity = ");
-  Serial.print(DHT.humidity);
-  Serial.println(" ");
-  delay(100);
-}
+void loop() {
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float h1 = dht1.readHumidity();
+  // float h2 = dht2.readHumidity();
+  // float h3 = dht3.readHumidity();
+  // float h4 = dht4.readHumidity();
+  //  if any result below is NaN (not a number) then something went wrong!
+  
+  // Serial.print("  sensor 2, "); 
+  // Serial.print(h2);
+  // Serial.print("  sensor 3, "); 
+  // Serial.print(h3);
+  // Serial.print("  sensor 4, "); 
+  // Serial.print(h4);
+  // Serial.println(" %\t");
+ }
+
+ void fire1(){
+  while(test){
+    float t0 = dht0.readTemperature();
+    float h0 = dht0.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t0);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h0);
+    Serial.println(" ");
+    delay(100);
+    if(dht0.readHumidity() == (starting_hum0-10) || dht0.readTemperature() == (starting_temp0+2)){
+      Serial.print("FIRE ONE IS ON!!!");
+      test = false; 
+    }
+  }
+ }
+
+ void fire2(){
+  while(test){
+    float t1 = dht1.readTemperature();
+    float h1 = dht1.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t1);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h1);
+    Serial.println(" ");
+    delay(100);
+    if(dht1.readHumidity() == (starting_hum1-10) || dht1.readTemperature() == (starting_temp1+2)){
+      Serial.print("FIRE ONE IS ON!!!");
+      test = false; 
+    }
+  }
+ }
