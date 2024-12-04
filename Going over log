@@ -3,22 +3,22 @@
 //#include "Tank.h"
 
 //Motor to pin connection
-#define MOTOR1_P1 46
-#define MOTOR1_P2 48
-#define MOTOR2_P1 50
-#define MOTOR2_P2 52
-#define MOTOR3_P1 44
-#define MOTOR3_P2 42
-#define MOTOR4_P1 40
-#define MOTOR4_P2 38
-#define MOTOR_PWM1 10
-#define MOTOR_PWM2 11
+#define MOTOR1_P1 22
+#define MOTOR1_P2 24
+#define MOTOR2_P1 26
+#define MOTOR2_P2 28
+#define MOTOR3_P1 30
+#define MOTOR3_P2 32
+#define MOTOR4_P1 34
+#define MOTOR4_P2 36
+#define MOTOR_PWM1 7
+#define MOTOR_PWM2 6
 
 void setup() {
   Serial.begin(9600);
   delay(2000);
   Serial.print("Wifi Connection started");
-  Enes100.begin("Fireboys", FIRE, 284, 22, 26);   //Connect Aruco Marker to Vision System
+  Enes100.begin("Fireboys", FIRE, 284, 52, 50);   //Connect Aruco Marker to Vision System
   Serial.print("Wifi connected");
   delay(2000);
   Enes100.println("Fireboys Starting Drive");
@@ -77,19 +77,26 @@ void loop() {
     //It will exit out of the code once it reaches the next section
     else if (y <= 0.7){
       Enes100.println("Zone C");
-      while(t < 1.55 || t > 1.655){   //Turn code for Zone C spawn
-        if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
-          turnLeft(70, 300, 1000);
+      while(t < 1.5 || t > 1.7){   //Turn code for Zone C spawn
+        if (t <= 1.55 && t > 0 || t <= 0 && t >= -1.65){    //Adjustment code 
+          turnLeft(80, 250, 1000);
           t = Enes100.getTheta();
         } 
-        if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){  //Adjustment code 
-          turnRight(70, 300, 1000);
+        if (t > 1.7 && t < (PI) || t < (-1.65) && t > -(PI)){  //Adjustment code 
+          turnRight(80, 250, 1000);
           t = Enes100.getTheta();
         }
       }
-      while (t >= 1.55 && t <= 1.655 && y < 1.3){   //Drive forward when facing range (ideal t = pi/2)
-        moveForward(40, 400, 1000);
+      while (y < 1){   //Drive forward when facing range (ideal t = pi/2)
         y = Enes100.getY();
+        moveForward(40, 400, 1000);
+        t=Enes100.getTheta();
+        if(t > 1.7){
+          turnRight(50,150,1000);
+        }
+        if(t < 1.5){
+          turnLeft(50,150,1000);
+        }
       }
       stopMoving();
       while (t > 0.3 || t < -0.3){    //Turn right until facing range (ideal t = 0)
