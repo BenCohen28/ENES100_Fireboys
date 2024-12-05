@@ -1,0 +1,613 @@
+#include "Enes100.h"
+#include <Wire.h>
+#include <VL53L1X.h>
+#include "DHT.h"
+
+
+#define MOTOR1_P1 22
+#define MOTOR1_P2 24
+#define MOTOR2_P1 26
+#define MOTOR2_P2 28
+#define MOTOR3_P1 30
+#define MOTOR3_P2 32
+#define MOTOR4_P1 34
+#define MOTOR4_P2 36
+#define MOTOR_PWM1 7
+#define MOTOR_PWM2 6
+
+#define IRQ_PIN 2
+#define XSHUT_PIN 3
+
+#define DHTPIN0 7
+#define DHTPIN1 8
+#define DHTPIN2 5
+#define DHTPIN3 2
+//#define DHTPIN4 5
+
+bool test= true;
+
+float starting_hum0;
+float starting_temp0;
+float starting_hum1;
+float starting_temp1;
+float starting_hum2;
+float starting_temp2;
+float starting_hum3;
+float starting_temp3;
+
+#define DHTTYPE DHT11   // DHT 11 
+
+DHT dht0(DHTPIN0, DHTTYPE);
+DHT dht1(DHTPIN1, DHTTYPE);
+DHT dht2(DHTPIN2, DHTTYPE);
+DHT dht3(DHTPIN3, DHTTYPE);
+
+
+// The number of sensors in your system.
+const uint8_t sensorCount = 3;
+
+// The Arduino pin connected to the XSHUT pin of each sensor.
+const uint8_t xshutPins[sensorCount] = { 4, 5, 6 };
+
+VL53L1X sensors[sensorCount];
+
+
+void setup() {
+  delay(2000);
+  Serial.print("Wifi Connection started");
+  Enes100.begin("Fireboys", FIRE, 284, 52, 50);   //Connect Aruco Marker to Vision System
+  Serial.print("Wifi connected");
+  dht0.begin();
+  dht1.begin();
+  dht2.begin();
+  dht3.begin();
+  starting_hum0 = dht0.readHumidity();
+  starting_temp0 = dht0.readHumidity();
+  starting_hum1 = dht1.readHumidity();
+  starting_temp1 = dht1.readHumidity();
+  starting_hum2 = dht2.readHumidity();
+  starting_temp2 = dht2.readHumidity();
+  starting_hum3 = dht3.readHumidity();
+  starting_temp3 = dht3.readHumidity();
+
+  fire1();
+  fire2();
+  fire3();
+  fire4();  
+  delay(2000);
+  Enes100.println("Fireboys Starting Drive");
+  pinMode(MOTOR1_P1, OUTPUT);
+  pinMode(MOTOR1_P2, OUTPUT);
+  pinMode(MOTOR2_P1, OUTPUT);
+  pinMode(MOTOR2_P2, OUTPUT);
+  pinMode(MOTOR3_P1, OUTPUT);
+  pinMode(MOTOR3_P2, OUTPUT);
+  pinMode(MOTOR4_P1, OUTPUT);
+  pinMode(MOTOR4_P2, OUTPUT);
+  pinMode(MOTOR_PWM1, OUTPUT);
+  pinMode(MOTOR_PWM2, OUTPUT);
+  pinMode(49,OUTPUT);
+  pinMode(47, OUTPUT);
+
+  analogWrite(MOTOR_PWM1, 100);
+  analogWrite(MOTOR_PWM2, 100);
+
+  while (!Serial) {}
+  Serial.begin(115200);
+  Wire.begin();
+  Wire.setClock(400000); // use 400 kHz I2C
+
+  // Disable/reset all sensors by driving their XSHUT pins low.
+  for (uint8_t i = 0; i < sensorCount; i++)
+  {
+    pinMode(xshutPins[i], OUTPUT);
+    digitalWrite(xshutPins[i], LOW);
+  }
+
+  // Enable, initialize, and start each sensor, one by one.
+  for (uint8_t i = 0; i < sensorCount; i++)
+  {
+    // Stop driving this sensor's XSHUT low. This should allow the carrier
+    // board to pull it high. (We do NOT want to drive XSHUT high since it is
+    // not level shifted.) Then wait a bit for the sensor to start up.
+    pinMode(xshutPins[i], INPUT);
+    delay(10);
+
+    sensors[i].setTimeout(500);
+    if (!sensors[i].init())
+    {
+      Serial.print("Failed to detect and initialize sensor ");
+      Serial.println(i);
+      while (1);
+    }
+
+    // Each sensor must have its address changed to a unique value other than
+    // the default of 0x29 (except for the last one, which could be left at
+    // the default). To make it simple, we'll just count up from 0x2A.
+    sensors[i].setAddress(0x2A + i);
+
+    sensors[i].startContinuous(50);
+  }
+}
+void loop() {
+    float x, y, t; bool v;
+    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
+    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
+    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
+    v = Enes100.isVisible(); // Is your aruco visible? True or False.
+     // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
+  float h0 = dht0.readHumidity();
+  float h1 = dht1.readHumidity();
+  float h2 = dht2.readHumidity();
+  float h3 = dht3.readHumidity();
+  // if any result below is NaN (not a number) then something went wrong!
+   //If the OTV spawns in ZOne A it will run the code below
+  //It will exit out of the code once it reaches the next section
+
+  if(x < 0.7){
+    if (y >= 1.3){
+      Enes100.println("Zone A ");
+        while(t > -1.55 || t < -1.655){   //Turn code for Zone A spawn
+          if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){  //Adjustment code 
+            turnRight(70, 300, 1000);
+            t = Enes100.getTheta();
+          } 
+          if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){    //Adjustment code 
+          turnLeft(70, 300, 1000);
+          t = Enes100.getTheta();
+        }
+      }
+      while (t <= -1.55 && t >= -1.655 && y > 0.6){   //Drive forward when facing range (ideal t = -pi/2)
+        moveForward(40, 500, 1000);
+        y = Enes100.getY();
+      }
+      stopMoving();
+      
+      // do missions
+      temp_topography_fans();
+      
+      while (t > -1.655 && t < 0){  //Code for turning from zone C to obstacles.
+        turnLeft(70, 300, 1000);
+        t = Enes100.getTheta();
+      }
+      while (t < 0.5 && t > -0.5 && x < 0.8){   //Drive forward when facing range (ideal t = 0)
+        moveForward(40, 800, 1000);
+        x = Enes100.getX();
+      }
+      stopMoving();
+      }
+    //If the OTV spawns in Zone C it will run the code below
+    //It will exit out of the code once it reaches the next section
+      else if (y <= 0.7){
+        Enes100.println("Zone C");
+        while(t < 1.5 || t > 1.7){   //Turn code for Zone C spawn
+          if (t <= 1.55 && t > 0 || t <= 0 && t >= -1.65){    //Adjustment code 
+            turnLeft(80, 250, 1000);
+            t = Enes100.getTheta();
+          } 
+          if (t > 1.7 && t < (PI) || t < (-1.65) && t > -(PI)){  //Adjustment code 
+            turnRight(80, 250, 1000);
+            t = Enes100.getTheta();
+          }
+        }
+        while (y < 1){   //Drive forward when facing range (ideal t = pi/2)
+          y = Enes100.getY();
+          moveForward(40, 400, 1000);
+          t=Enes100.getTheta();
+          if(t > 1.7){
+            turnRight(50,150,1000);
+          }
+          if(t < 1.5){
+            turnLeft(50,150,1000);
+          }
+        }
+        stopMoving();
+        // do missions
+        temp_topography_fans();
+        while (t > 0.3 || t < -0.3){    //Turn right until facing range (ideal t = 0)
+          turnRight(70, 300, 1000);
+          t = Enes100.getTheta();
+        }
+        while(t < 0.5 && t > -0.5 && x < 0.8){    //Drive forward when range is met
+          moveForward(40, 500, 1000);
+          x=Enes100.getX();
+        }
+      }
+    }
+    if(y > 0.8){
+      while(t > -1.55 || t < -1.655){   //Turn code for Zone A
+          if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
+            turnRight(70, 300, 500);
+            t = Enes100.getTheta();
+          } 
+          if (t > (PI/2) && t < (PI) || t>-(PI) && t<-(PI/2)){    //Adjustment code 
+            turnLeft(70, 300, 500);
+            t = Enes100.getTheta();
+          }
+      }
+      while(t < -1.55 && t > -1.655 && y > 0.8){    //Drive forward when facing range (ideal t = -pi/2)
+        moveForward(40, 300, 1000);
+        y= Enes100.getY();
+        }
+    }
+    while(x>2.5 && x <3.4 && y < 1){    //OTV actions in Zone 4
+      while( t > 0.2 || t < -0.2){   //Turn left until range is met (ideal t = 0)
+        turnLeft(70, 300, 1000);
+        t=Enes100.getTheta();
+      }
+        log(60, 100);   //Code to run over log
+        Enes100.print(Enes100.getTheta());
+        x=Enes100.getX();
+  }
+
+ 
+  //  if (x >= 0 && x <= 0.8){
+  //      Enes100.println("Zone 1 ");
+  //     if (y >= 1.3){
+  //         Enes100.println("Zone A ");
+  //         while(t > -1.5 || t < -1.7){
+  //            Tank.setLeftMotorPWM(100);
+  //            Tank.setRightMotorPWM(-100);
+  //            t = Enes100.getTheta();
+  //            Enes100.println(Enes100.getTheta());
+  //         }
+  //         while (t <= -1.5 && t >= -1.7 && y > 0.5){
+  //           Tank.setLeftMotorPWM(150);
+  //            Tank.setRightMotorPWM(150);
+  //            y = Enes100.getY();
+  //       }
+  //       Tank.turnOffMotors();
+  //            while (t > -1.7 && t < 0){
+  //               Tank.setLeftMotorPWM(-100);
+  //               Tank.setRightMotorPWM(100);
+  //               t = Enes100.getTheta();
+  //            }
+  //           Tank.turnOffMotors();
+  //           while (t < 0.5 && t > -0.5 && x < 0.8){
+  //           Tank.setLeftMotorPWM(150);
+  //           Tank.setRightMotorPWM(150);
+  //           x = Enes100.getX();
+        
+  //     }
+  //           }
+  //       else {
+  //        Enes100.println("Zone C");
+  //         while(t < 1.55 || t > 1.655){
+  //            Tank.setLeftMotorPWM(100);
+  //            Tank.setRightMotorPWM(-100);
+  //            t = Enes100.getTheta();
+  //         }
+  //         while (t >= 1.55 && t <= 1.655 && y < 1.51){
+  //           Tank.setLeftMotorPWM(100);
+  //            Tank.setRightMotorPWM(100);
+  // if(x < 0.7){
+  //     if (y >= 1.3){
+  //         Enes100.println("Zone A ");
+  //         while(t > -1.55 || t < -1.655){
+  //            Tank.setLeftMotorPWM(100);
+  //            Tank.setRightMotorPWM(-100);
+  //            t = Enes100.getTheta();
+  //         }
+  //         while (t <= -1.55 && t >= -1.655 && y > 0.5){
+  //           Tank.setLeftMotorPWM(150);
+  //            Tank.setRightMotorPWM(150);
+  //            y = Enes100.getY();
+  //       }
+    
+  //       Tank.turnOffMotors();
+  //            while (t > -1.655 && t < 0){
+  //               Tank.setLeftMotorPWM(-100);
+  //               Tank.setRightMotorPWM(100);
+  //               t = Enes100.getTheta();
+  //            }
+  //           Tank.turnOffMotors();
+  //           while (t < 0.5 && t > -0.5 && x < 0.8){
+  //           Tank.setLeftMotorPWM(150);
+  //           Tank.setRightMotorPWM(150);
+  //           x = Enes100.getX();
+  //         }
+  //           Tank.turnOffMotors();
+  //    }
+  //    //If the OTV spawns in Zone C it will run the code below
+  //    //It will exit out of the code once it reaches the next part of the course
+  //  else if (y <= 0.7){
+  //        Enes100.println("Zone C");
+  //         while(t < 1.55 || t > 1.655){
+  //            Tank.setLeftMotorPWM(100);
+  //            Tank.setRightMotorPWM(-100);
+  //            t = Enes100.getTheta();
+  //         }
+  //         while (t >= 1.55 && t <= 1.655 && y < 1.4){
+  //           Tank.setLeftMotorPWM(150);
+  //            Tank.setRightMotorPWM(150);
+  //            y = Enes100.getY();
+  //             }
+  //            Tank.turnOffMotors();
+  //           while (t < 1.655 && t > 0){
+  //               Tank.setLeftMotorPWM(100);
+  //               Tank.setRightMotorPWM(-100);
+  //               t = Enes100.getTheta();
+  //            }
+  //           Tank.turnOffMotors();
+  //           while(t < 0.5 && t > -0.5 && x < 0.8){
+  //               Tank.setLeftMotorPWM(150);
+  //               Tank.setRightMotorPWM(150);
+  //               x=Enes100.getX();
+  //           }
+  //           Tank.turnOffMotors();
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+  //       if (x >= 0.8 && x <= 2.6 ){
+  //       Enes100.println("Zone 2 ");
+  //       if (y >= 1.3 || y < 0.8){
+  //           while (t < 0.5 && t > -0.5 && x < 2.655){
+  //               Tank.setLeftMotorPWM(100);
+  //               Tank.setRightMotorPWM(100);
+  //               x = Enes100.getX();
+  //               Enes100.print("Ultrasonic Reading: ");
+  //               Enes100.println(Tank.readDistanceSensor(1));
+  //           while (abs(Tank.readDistanceSensor(1)) < 0.25){
+  //               if (y > 1.3){
+  //                   while( t < 0.1 && t > -1.55){
+  //                   Tank.setRightMotorPWM(-100);
+  //                   Tank.setLeftMotorPWM(100);
+  //                   t = Enes100.getTheta();
+  //               }   
+  //                   Tank.turnOffMotors();
+  //                   while (y > 1){
+  //                   Tank.setLeftMotorPWM(150);
+  //                   Tank.setRightMotorPWM(150);
+  //                   y = Enes100.getY();
+  //               }
+  //                   while (t > -1.6 && t < 0){
+  //                   Tank.setLeftMotorPWM(-100);
+  //                   Tank.setRightMotorPWM(100);
+  //                   t = Enes100.getTheta();
+  //                   }
+  //               }
+  //                   if (y < 0.8){
+  //                       while( t > -0.1 && t < 1.55){
+  //                           Tank.setRightMotorPWM(100);
+  //                           Tank.setLeftMotorPWM(-100);
+  //                           t = Enes100.getTheta();
+  //                       }
+  //                       Tank.turnOffMotors();
+  //                        while (y < 1){
+  //                            Tank.setLeftMotorPWM(150);
+  //                            Tank.setRightMotorPWM(150);
+  //                            y = Enes100.getY();
+  //                           }
+  //                        while (t < 1.7 && t > 0){
+  //                            Tank.setLeftMotorPWM(100);
+  //                            Tank.setRightMotorPWM(-100);
+  //                            t = Enes100.getTheta();
+  //                        }
+                         
+  //                   }
+  //              }
+  //           }
+  //       }
+  //   }
+  //       Tank.turnOffMotors();
+
+  //       if (y > 0.7){
+  //           while (t > -1.45 || t < -2){
+  //               Tank.setLeftMotorPWM(100);
+  //               Tank.setRightMotorPWM(-100);
+  //               t = Enes100.getTheta();
+  //       }
+  //       Tank.turnOffMotors();
+  //           while (y > 0.6){
+  //               Tank.setLeftMotorPWM(150);
+  //               Tank.setRightMotorPWM(150);
+  //               y = Enes100.getY();
+  //           }
+  //       }
+  //           Tank.turnOffMotors();
+  //           while (t > 0.5 || t < -0.1){
+  //               Tank.setLeftMotorPWM(-100);
+  //               Tank.setRightMotorPWM(100);
+  //               t = Enes100.getTheta();
+  //           }
+  //           while (x < 3.6){
+  //               Tank.setLeftMotorPWM(150);
+  //               Tank.setRightMotorPWM(150);
+  //               x = Enes100.getX();
+  //           }
+  //           Tank.turnOffMotors();
+}
+
+
+void turnRight(float speed, int wait, int wait1){   //Function for turning right
+  speed = (speed/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed);
+  digitalWrite(MOTOR1_P1, HIGH);
+  digitalWrite(MOTOR1_P2, LOW);
+  digitalWrite(MOTOR2_P1, LOW);
+  digitalWrite(MOTOR2_P2, HIGH);
+  digitalWrite(MOTOR3_P1, HIGH);
+  digitalWrite(MOTOR3_P2, LOW);
+  digitalWrite(MOTOR4_P1, LOW);
+  digitalWrite(MOTOR4_P2, HIGH);
+  Enes100.println("Turning right");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
+}
+
+void turnLeft(float speed, int wait, int wait1){    //Function for turning left
+  speed = (speed/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed);
+  digitalWrite(MOTOR1_P1, LOW);
+  digitalWrite(MOTOR1_P2, HIGH);
+  digitalWrite(MOTOR2_P1, HIGH);
+  digitalWrite(MOTOR2_P2, LOW);
+  digitalWrite(MOTOR3_P1, LOW);
+  digitalWrite(MOTOR3_P2, HIGH);
+  digitalWrite(MOTOR4_P1, HIGH);
+  digitalWrite(MOTOR4_P2, LOW);
+  Enes100.println("Turning left");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
+}
+
+void moveForward(float speed, int wait, int wait1){   //Function for forward movement
+  speed = (speed/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed);
+  digitalWrite(MOTOR1_P1, HIGH);
+  digitalWrite(MOTOR1_P2, LOW);
+  digitalWrite(MOTOR2_P1, HIGH);
+  digitalWrite(MOTOR2_P2, LOW);
+  digitalWrite(MOTOR3_P1, HIGH);
+  digitalWrite(MOTOR3_P2, LOW);
+  digitalWrite(MOTOR4_P1, HIGH);
+  digitalWrite(MOTOR4_P2, LOW);
+  Enes100.println("moving Forward");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
+}
+
+void stopMoving(){    //Function to stop movement
+  analogWrite(MOTOR_PWM1, 0);
+  analogWrite(MOTOR_PWM2, 0);
+  digitalWrite(MOTOR1_P1, LOW);
+  digitalWrite(MOTOR1_P2, LOW);
+  digitalWrite(MOTOR2_P1, LOW);
+  digitalWrite(MOTOR2_P2, LOW);
+  digitalWrite(MOTOR3_P1, LOW);
+  digitalWrite(MOTOR3_P2, LOW);
+  digitalWrite(MOTOR4_P1, LOW);
+  digitalWrite(MOTOR4_P2, LOW);
+  Enes100.println("stopped moving");
+}
+
+void log(float speed, float speed1){    //Function for the acceleration to get over log
+  speed = (speed/100)*255;
+  speed1 = (speed1/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed1);
+  digitalWrite(MOTOR1_P1, HIGH);
+  digitalWrite(MOTOR1_P2, LOW);
+  digitalWrite(MOTOR2_P1, HIGH);
+  digitalWrite(MOTOR2_P2, LOW);
+  digitalWrite(MOTOR3_P1, HIGH);
+  digitalWrite(MOTOR3_P2, LOW);
+  digitalWrite(MOTOR4_P1, HIGH);
+  digitalWrite(MOTOR4_P2, LOW);
+  Enes100.println("moving Forward");
+}
+
+void temp_topography_fans(){
+  fire1();
+  fire2();
+  fire3();
+  fire4();
+  topography();
+  fans();
+}
+
+void fire1(){
+  while(test){
+    float t0 = dht0.readTemperature();
+    float h0 = dht0.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t0);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h0);
+    Serial.println(" ");
+    delay(100);
+    if(dht0.readHumidity() == (starting_hum0-10) || dht0.readTemperature() == (starting_temp0+2)){
+      Serial.print("FIRE ONE IS ON!!!");
+      test = false; 
+    }
+  }
+
+}
+
+void fire2(){
+  while(test){
+    float t1 = dht1.readTemperature();
+    float h1 = dht1.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t1);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h1);
+    Serial.println(" ");
+    delay(100);
+    if(dht1.readHumidity() == (starting_hum1-10) || dht1.readTemperature() == (starting_temp1+2)){
+      Serial.print("FIRE TWO IS ON!!!");
+      test = false; 
+    }
+  }
+
+}
+
+void fire3(){
+  while(test){
+    float t2 = dht2.readTemperature();
+    float h2 = dht2.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t2);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h2);
+    Serial.println(" ");
+    delay(100);
+    if(dht2.readHumidity() == (starting_hum2-10) || dht2.readTemperature() == (starting_temp2+2)){
+      Serial.print("FIRE THREE IS ON!!!");
+      test = false; 
+    }
+  }
+}
+
+void fire4(){
+  while(test){
+    float t3 = dht3.readTemperature();
+    float h3 = dht3.readHumidity();
+    Serial.print("Temperature = ");
+    Serial.print(t3);
+    Serial.print(" ");
+    Serial.print("Humidity = ");
+    Serial.print(h3);
+    Serial.println(" ");
+    delay(100);
+    if(dht3.readHumidity() == (starting_hum3-10) || dht3.readTemperature() == (starting_temp3+2)){
+      Serial.print("FIRE FOUR IS ON!!!");
+      test = false; 
+    }
+  }
+}
+
+
+}
+
+void topography(){
+
+}
+
+void fans(int time_on, int time_off){
+  digitalWrite(49, HIGH);
+  digitalWrite(47, LOW);
+  delay(time_on);
+  digitalWrite(49, LOW);
+  digitalWrite(47, LOW);
+  delay(time_off);
+  digitalWrite(49, LOW);
+  digitalWrite(47, HIGH);
+  delay(time_on);
+  digitalWrite(49, LOW);
+  digitalWrite(47, LOW);
+  delay(time_off);
+
+}
