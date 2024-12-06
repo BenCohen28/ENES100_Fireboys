@@ -1,11 +1,10 @@
-//#include "Arduino.h"
 #include "Enes100.h"
-#include <Wire.h>
-#include <VL53L1X.h>
+//#include <Wire.h>
+//#include <VL53L1X.h>
 
 
-//#include "Tank.h"
 
+//Motor to pin connection
 #define MOTOR1_P1 22
 #define MOTOR1_P2 24
 #define MOTOR2_P1 26
@@ -17,24 +16,22 @@
 #define MOTOR_PWM1 7
 #define MOTOR_PWM2 6
 
-#define IRQ_PIN 2
-#define XSHUT_PIN 3
+// const uint8_t sensorCount = 2;
 
-// The number of sensors in your system.
-const uint8_t sensorCount = 3;
+// // The Arduino pin connected to the XSHUT pin of each sensor.
+// const uint8_t xshutPins[sensorCount] = { 23, 25 };
 
-// The Arduino pin connected to the XSHUT pin of each sensor.
-const uint8_t xshutPins[sensorCount] = { 4, 5, 6 };
-
-VL53L1X sensors[sensorCount];
-
-bool test =true; 
+// VL53L1X sensors[sensorCount];
 
 void setup() {
+  // Serial.begin(115200);
+  // Wire.begin();
+  // Wire.setClock(400000);
+  Serial.begin(9600);
   delay(2000);
-  Serial.print("Wifi Connection started");
+  Enes100.print("Wifi Connection started");
   Enes100.begin("Fireboys", FIRE, 284, 52, 50);   //Connect Aruco Marker to Vision System
-  Serial.print("Wifi connected");
+  Enes100.print("Wifi connected");
   delay(2000);
   Enes100.println("Fireboys Starting Drive");
   pinMode(MOTOR1_P1, OUTPUT);
@@ -48,54 +45,50 @@ void setup() {
   pinMode(MOTOR_PWM1, OUTPUT);
   pinMode(MOTOR_PWM2, OUTPUT);
 
+  pinMode(51,OUTPUT);
+  pinMode(53, OUTPUT);
+
   analogWrite(MOTOR_PWM1, 100);
   analogWrite(MOTOR_PWM2, 100);
-
-  while (!Serial) {}
-  Serial.begin(115200);
-  Wire.begin();
-  Wire.setClock(400000); // use 400 kHz I2C
-
-  // Disable/reset all sensors by driving their XSHUT pins low.
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    pinMode(xshutPins[i], OUTPUT);
-    digitalWrite(xshutPins[i], LOW);
+  // for (uint8_t i = 0; i < sensorCount; i++){
+  //   pinMode(xshutPins[i], OUTPUT);
+  //   digitalWrite(xshutPins[i], LOW);
   }
 
   // Enable, initialize, and start each sensor, one by one.
-  for (uint8_t i = 0; i < sensorCount; i++)
-  {
-    // Stop driving this sensor's XSHUT low. This should allow the carrier
-    // board to pull it high. (We do NOT want to drive XSHUT high since it is
-    // not level shifted.) Then wait a bit for the sensor to start up.
-    pinMode(xshutPins[i], INPUT);
-    delay(10);
+  // for (uint8_t i = 0; i < sensorCount; i++)
+  // {
+  //   // Stop driving this sensor's XSHUT low. This should allow the carrier
+  //   // board to pull it high. (We do NOT want to drive XSHUT high since it is
+  //   // not level shifted.) Then wait a bit for the sensor to start up.
+  //   pinMode(xshutPins[i], INPUT);
+  //   delay(10);
 
-    sensors[i].setTimeout(500);
-    if (!sensors[i].init())
-    {
-      Serial.print("Failed to detect and initialize sensor ");
-      Serial.println(i);
-      while (1);
-    }
+  //   sensors[i].setTimeout(500);
+  //   if (!sensors[i].init())
+  //   {
+  //     Enes100.print("Failed to detect and initialize sensor ");
+  //     Enes100.println(i);
+  //     while (1);
+  //   }
 
     // Each sensor must have its address changed to a unique value other than
     // the default of 0x29 (except for the last one, which could be left at
     // the default). To make it simple, we'll just count up from 0x2A.
-    sensors[i].setAddress(0x2A + i);
+    // sensors[i].setAddress(0x2A + i);
 
-    sensors[i].startContinuous(50);
-  }
-}
+    // sensors[i].startContinuous(50);
+  //}
+
+//}
 void loop() {
-    float x, y, t; bool v;
-    x = Enes100.getX();  // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
-    y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible.
-    t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible.
-    v = Enes100.isVisible(); // Is your aruco visible? True or False.
-    
-   //If the OTV spawns in ZOne A it will run the code below
+  float x, y, t; bool v;
+  x = Enes100.getX();   // Your X coordinate! 0-4, in meters, -1 if no aruco is not visibility (but you should use Enes100.isVisible to check that instead)
+  y = Enes100.getY();  // Your Y coordinate! 0-2, in meters, also -1 if your aruco is not visible
+  t = Enes100.getTheta();  //Your theta! -pi to +pi, in radians, -1 if your aruco is not visible
+  v = Enes100.isVisible(); // Is your aruco visible? True or False
+   
+  //If the OTV spawns in ZOne A it will run the code below
   //It will exit out of the code once it reaches the next section
   if(x < 0.7){
     if (y >= 1.3){
@@ -104,30 +97,37 @@ void loop() {
           if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){  //Adjustment code 
             turnRight(70, 300, 1000);
             t = Enes100.getTheta();
-          } 
-          if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){    //Adjustment code 
-          turnLeft(70, 300, 1000);
-          t = Enes100.getTheta();
-        }
-      }
-      while (t <= -1.55 && t >= -1.655 && y > 0.6){   //Drive forward when facing range (ideal t = -pi/2)
-        moveForward(40, 500, 1000);
-        y = Enes100.getY();
-      }
-      stopMoving();
-      
-      // do missions
-      temp_topography_fans();
-      
-      while (t > -1.655 && t < 0){  //Code for turning from zone C to obstacles.
+      } 
+      if (t > (PI/2) && t < (PI) || t > -(PI) && t < -(PI/2)){    //Adjustment code 
         turnLeft(70, 300, 1000);
         t = Enes100.getTheta();
       }
-      while (t < 0.5 && t > -0.5 && x < 0.8){   //Drive forward when facing range (ideal t = 0)
-        moveForward(40, 800, 1000);
-        x = Enes100.getX();
-      }
-      stopMoving();
+    }
+    while (t <= -1.55 && t >= -1.655 && y > 1){   //Drive forward when facing range (ideal t = -pi/2)
+      moveForward(50, 500, 1000);
+      y = Enes100.getY();
+       t=Enes100.getTheta();
+        if(t < -1.7){
+          turnRight(80,150,1000);
+        }
+        if(t > -1.5){
+          turnLeft(80,150,1000);
+        }
+    }
+    stopMoving();
+    //topography();
+    fan(20000,3000);
+    moveBackward(50, 400, 1000);
+    stopMoving();
+    while (t > -1.655 && t < 0){  //Code for turning from zone C to obstacles.
+      turnLeft(80, 300, 1000);
+      t = Enes100.getTheta();
+    }
+    while (t < 0.5 && t > -0.5 && x < 0.8){   //Drive forward when facing range (ideal t = 0)
+      moveForward(50, 600, 1000);
+      x = Enes100.getX();
+    }
+    stopMoving();
     }
     //If the OTV spawns in Zone C it will run the code below
     //It will exit out of the code once it reaches the next section
@@ -145,180 +145,67 @@ void loop() {
       }
       while (y < 1){   //Drive forward when facing range (ideal t = pi/2)
         y = Enes100.getY();
-          moveForward(40, 400, 1000);
-          t=Enes100.getTheta();
-          if(t > 1.7){
-            turnRight(50,150,1000);
-          }
-          if(t < 1.5){
-            turnLeft(50,150,1000);
-          }
+        moveForward(50, 400, 1000);
+        t=Enes100.getTheta();
+        if(t > 1.7){
+          turnRight(80,150,1000);
         }
-        stopMoving();
-        // do missions
-        temp_topography_fans();
-        while (t > 0.3 || t < -0.3){    //Turn right until facing range (ideal t = 0)
-          turnRight(70, 300, 1000);
-          t = Enes100.getTheta();
-        }
-        while(t < 0.5 && t > -0.5 && x < 0.8){    //Drive forward when range is met
-          moveForward(40, 500, 1000);
-          x=Enes100.getX();
+        if(t < 1.5){
+          turnLeft(80,150,1000);
         }
       }
-    }
-    if(y > 0.8){
-      while(t > -1.55 || t < -1.655){   //Turn code for Zone A
-          if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
-            turnRight(70, 300, 500);
-            t = Enes100.getTheta();
-          } 
-          if (t > (PI/2) && t < (PI) || t>-(PI) && t<-(PI/2)){    //Adjustment code 
-            turnLeft(70, 300, 500);
-            t = Enes100.getTheta();
-          }
+      stopMoving();
+      // topography();
+      fan(20000,3000);
+      moveBackward(50, 400, 1000);
+      stopMoving();
+      while (t > 0.3 || t < -0.3){    //Turn right until facing range (ideal t = 0)
+        turnRight(80, 300, 1000);
+        t = Enes100.getTheta();
       }
-      while(t < -1.55 && t > -1.655 && y > 0.8){    //Drive forward when facing range (ideal t = -pi/2)
-        moveForward(40, 300, 1000);
-        y= Enes100.getY();
-        }
-  }
-  while (x >= 0.8 && x <= 2.6 ){
-    Enes100.println("Zone 2 ");
-      if (y >= 1.3 || y < 0.8){
-        while (t < 0.5 && t > -0.5 && x < 2.655){
-          moveForward(40, 300, 1000);
-          x = Enes100.getX();
-          Serial.print(sensors[2].read());
-          if (sensors[2].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
-          while (sensors[2].read() <= 50){
-            if (y > 1.3){
-              while( t < 0.1 && t > -1.55){
-                turnLeft(40, 300, 1000);
-                t = Enes100.getTheta();
-                }
-              while (y > 1){
-                moveForward(40, 300, 1000);
-                y = Enes100.getY();
-              }
-              while (t > -1.6 && t < 0){
-                turnRight(40, 300, 1000);
-                t = Enes100.getTheta();
-              }   
-            }
-            if (y < 0.8){
-              while( t > -0.1 && t < 1.55){
-                turnRight(40, 300, 1000);
-                t = Enes100.getTheta();
-              }
-              stopMoving();
-              while (y < 1){
-                moveForward(40, 300, 1000);
-                y = Enes100.getY();
-              }
-              while (t < 1.7 && t > 0){
-                turnLeft(40, 300, 1000);
-                t = Enes100.getTheta();
-                }      
-              }
-          }
-          stopMoving();
-          Serial.print('\t');
+      while(t < 0.5 && t > -0.5 && x < 0.8){    //Drive forward when range is met
+        moveForward(50, 500, 1000);
+        x=Enes100.getX();
       }
     }
   }
+  while(x < 2.5){
+    moveForward(50,500,1000);
+    x=Enes100.getX();
+
+  }
+
+
+
   while(x>2.5 && x <3.4 && y < 1){    //OTV actions in Zone 4
-    while( t > 0.2 || t < -0.2){   //Turn left until range is met (ideal t = 0)
-      turnLeft(70, 300, 1000);
-      t=Enes100.getTheta();
-    }
+     while( t > 0.2 || t < -0.2){   //Turn left until range is met (ideal t = 0)
+        turnLeft(70, 300, 1000);
+        t=Enes100.getTheta();
+     }
       log(60, 100);   //Code to run over log
       Enes100.print(Enes100.getTheta());
       x=Enes100.getX();
   }
+  exit(0);
 }
- 
-  
-  //       if (x >= 0.8 && x <= 2.6 ){
-  //       Enes100.println("Zone 2 ");
-  //       if (y >= 1.3 || y < 0.8){
-  //           while (t < 0.5 && t > -0.5 && x < 2.655){
-  //               Tank.setLeftMotorPWM(100);
-  //               Tank.setRightMotorPWM(100);
-  //               x = Enes100.getX();
-  //               Enes100.print("Ultrasonic Reading: ");
-  //               Enes100.println(Tank.readDistanceSensor(1));
-  //           while (abs(Tank.readDistanceSensor(1)) < 0.25){
-                // if (y > 1.3){
-                //     while( t < 0.1 && t > -1.55){
-                //     Tank.setRightMotorPWM(-100);
-                //     Tank.setLeftMotorPWM(100);
-                //     t = Enes100.getTheta();
-                // }   
-                //     Tank.turnOffMotors();
-                //     while (y > 1){
-                //     Tank.setLeftMotorPWM(150);
-                //     Tank.setRightMotorPWM(150);
-                //     y = Enes100.getY();
-                // }
-                //     while (t > -1.6 && t < 0){
-                //     Tank.setLeftMotorPWM(-100);
-                //     Tank.setRightMotorPWM(100);
-                //     t = Enes100.getTheta();
-                //     }
-                // }
-  //                   if (y < 0.8){
-  //                       while( t > -0.1 && t < 1.55){
-  //                           Tank.setRightMotorPWM(100);
-  //                           Tank.setLeftMotorPWM(-100);
-  //                           t = Enes100.getTheta();
-  //                       }
-  //                       Tank.turnOffMotors();
-  //                        while (y < 1){
-  //                            Tank.setLeftMotorPWM(150);
-  //                            Tank.setRightMotorPWM(150);
-  //                            y = Enes100.getY();
-  //                           }
-  //                        while (t < 1.7 && t > 0){
-  //                            Tank.setLeftMotorPWM(100);
-  //                            Tank.setRightMotorPWM(-100);
-  //                            t = Enes100.getTheta();
-  //                        }
-                         
-  //                   }
-  //              }
-  //           }
-  //       }
-  //   }
-  //       Tank.turnOffMotors();
 
-  //       if (y > 0.7){
-  //           while (t > -1.45 || t < -2){
-  //               Tank.setLeftMotorPWM(100);
-  //               Tank.setRightMotorPWM(-100);
-  //               t = Enes100.getTheta();
-  //       }
-  //       Tank.turnOffMotors();
-  //           while (y > 0.6){
-  //               Tank.setLeftMotorPWM(150);
-  //               Tank.setRightMotorPWM(150);
-  //               y = Enes100.getY();
-  //           }
-  //       }
-  //           Tank.turnOffMotors();
-  //           while (t > 0.5 || t < -0.1){
-  //               Tank.setLeftMotorPWM(-100);
-  //               Tank.setRightMotorPWM(100);
-  //               t = Enes100.getTheta();
-  //           }
-  //           while (x < 3.6){
-  //               Tank.setLeftMotorPWM(150);
-  //               Tank.setRightMotorPWM(150);
-  //               x = Enes100.getX();
-  //           }
-  //           Tank.turnOffMotors();
-
-
+void moveBackward(float speed, int wait, int wait1){
+  speed = (speed/100)*255;
+  analogWrite(MOTOR_PWM1, speed);
+  analogWrite(MOTOR_PWM2, speed);
+  digitalWrite(MOTOR1_P1, LOW);
+  digitalWrite(MOTOR1_P2, HIGH);
+  digitalWrite(MOTOR2_P1, LOW);
+  digitalWrite(MOTOR2_P2, HIGH);
+  digitalWrite(MOTOR3_P1, LOW);
+  digitalWrite(MOTOR3_P2, HIGH);
+  digitalWrite(MOTOR4_P1, LOW);
+  digitalWrite(MOTOR4_P2, HIGH);
+  Enes100.println("moving Backwards");
+  delay(wait);
+  stopMoving();
+  delay(wait1);
+}
 void turnRight(float speed, int wait, int wait1){   //Function for turning right
   speed = (speed/100)*255;
   analogWrite(MOTOR_PWM1, speed);
@@ -403,20 +290,77 @@ void log(float speed, float speed1){    //Function for the acceleration to get o
   Enes100.println("moving Forward");
 }
 
-void temp_topography_fans(){
-  temp();
-  topography();
-  fans();
-}
-
-void temp(){
-
-}
-
-void topography(){
-
-}
-
-void fans(){
+void fan(int time_on, int time_off) {
+  digitalWrite(51, HIGH);
+  digitalWrite(53, LOW);
+  delay(time_on);
+  digitalWrite(51, LOW);
+  digitalWrite(53, LOW);
+  delay(time_off);
+  digitalWrite(51, LOW);
+  digitalWrite(53, HIGH);
+  delay(time_on);
+  digitalWrite(51, LOW);
+  digitalWrite(53, LOW);
+  delay(time_off);
 
 }
+
+// void topography(){
+//   for (int i = 0; i < sensorCount; i++)
+//   {
+//     Serial.print(sensors[i].read());
+//     if (sensors[i].timeoutOccurred()) { Serial.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//   }
+//   Serial.println();
+
+//   if (sensors[0].read() > sensors[1].read()){
+//     Enes100.print("B");
+//     if (sensors[0].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//     if (sensors[1].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//   } else if (sensors[0].read() < sensors[1].read()){
+//     Enes100.print("C");
+//     if (sensors[0].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//     if (sensors[1].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//   } else if ((sensors[0].read()>= 125 && sensors[0].read()<=150) && (sensors[1].read()>= 185 && sensors[1].read()<=195)){
+//     Enes100.print("A");
+//     if (sensors[0].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//     if (sensors[1].timeoutOccurred()) { Enes100.print(" TIMEOUT"); }
+//     Enes100.print('\t');
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // if(y > 0.8){
+  //   while(t > -1.55 || t < -1.655){   //Turn code for Zone A
+  //       if (t <= (PI/2) && t > 0 || t <= 0 && t >= -(PI/2)){    //Adjustment code 
+  //         turnRight(80, 300, 500);
+  //         t = Enes100.getTheta();
+  //       } 
+  //       if (t > (PI/2) && t < (PI) || t>-(PI) && t<-(PI/2)){    //Adjustment code 
+  //         turnLeft(80, 300, 500);
+  //         t = Enes100.getTheta();
+  //       }
+  //   }
+  //   while(t < -1.55 && t > -1.655 && y > 0.8){    //Drive forward when facing range (ideal t = -pi/2)
+  //     moveForward(40, 300, 1000);
+  //     y= Enes100.getY();
+  //     }
+  // }
